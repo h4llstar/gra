@@ -3497,10 +3497,6 @@ mainapi:CreateCategory({
 	Name = 'Minigames',
 	Icon = getcustomasset('newvape/assets/old/worldicon.png')
 })
-mainapi:CreateCategory({
-	Name = 'Modules',
-	Icon = getcustomasset('newvape/assets/new/module.png')
-})
 mainapi.Legit = mainapi:CreateLegit({
 	Name = 'Legit'
 })

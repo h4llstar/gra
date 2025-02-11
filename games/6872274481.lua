@@ -1,3 +1,4 @@
+--This watermark is used to delete the file if its cached, remove it to make the file persist after vape updates.
 local run = function(func)
 	func()
 end
@@ -2508,10 +2509,12 @@ run(function()
 	})
 	local KillauraVisualColorPicker
 	local VisualizerPart
+	local Material
 	Killaura:CreateToggle({
 		Name = 'Visualizer',
 		Function = function(callback)
 			KillauraVisualColorPicker.Object.Visible = callback
+			Material.Object.Visible = callback
 			local function createVisualizer(player)
 				if workspace.CurrentCamera:FindFirstChild("XSI_VISUAL") then
 					workspace.CurrentCamera:FindFirstChild("XSI_VISUAL"):Destroy()
@@ -2520,8 +2523,8 @@ run(function()
 				Visualizer.MeshId = "rbxassetid://3726303797"
 				Visualizer.Name = "XSI_VISUAL"
 				Visualizer.CanCollide = false
+				Visualizer.Material = Enum.Material[Material.Value]
 				Visualizer.Anchored = true
-				Visualizer.Material = Enum.Material.Neon
 				Visualizer.Size = Vector3.new(10 * 1, 0.01, 10 * 1)
 				Visualizer.Color = Color3.fromHSV(KillauraVisualColorPicker.Hue, KillauraVisualColorPicker.Sat, KillauraVisualColorPicker.Value)
 				Visualizer.Parent = workspace.CurrentCamera
@@ -2541,7 +2544,10 @@ run(function()
 					Visualizer.Color = Color3.fromHSV(KillauraVisualColorPicker.Hue, KillauraVisualColorPicker.Sat, KillauraVisualColorPicker.Value)
 				end
 				game:GetService("RunService").Heartbeat:Connect(updateColor)
-	
+				local function updateMaterial()
+					Visualizer.Material = Enum.Material[Material.Value]
+				end
+				game:GetService("RunService").Heartbeat:Connect(updateMaterial)
 				return Visualizer
 			end
 	
@@ -2570,6 +2576,21 @@ run(function()
 		DefaultHue = 0.6,
 		DefaultOpacity = 1,
 		Visible = false
+	})
+	local materials = {'ForceField'}
+	for _, v in Enum.Material:GetEnumItems() do
+		if v.Name ~= 'ForceField' then
+			table.insert(materials, v.Name)
+		end
+	end
+	Material = Killaura:CreateDropdown({
+		Name = 'Material',
+		List = materials,
+		Function = function(val)
+			if Visualizer then
+				Visualizer.Material = Enum.Material[val]
+			end
+		end
 	})
 	Mouse = Killaura:CreateToggle({Name = 'Require mouse down'})
 	Swing = Killaura:CreateToggle({Name = 'No Swing'})
@@ -8466,4 +8487,3 @@ run(function()
 		List = WinEffectName
 	})
 end)
-	

@@ -7164,17 +7164,17 @@ run(function()
 					setthreadidentity(8)
 				end
 				hat = Instance.new('MeshPart')
-				hat.Size = Vector3.new(3, 0.7, 3)
-				hat.Name = 'ChinaHat'
+				hat.Size = Vector3.new(1, .9, 1)
+				hat.Name = 'ChingChongHat'
 				hat.Material = Enum.Material[Material.Value]
 				hat.Color = Color3.fromHSV(Color.Hue, Color.Sat, Color.Value)
 				hat.CanCollide = false
 				hat.CanQuery = false
 				hat.Massless = true
-				hat.MeshId = 'http://www.roblox.com/asset/?id=1778999'
-				hat.Transparency = 1 - Color.Opacity
+				hat.MeshId = 'rbxassetid://7895567418'
+				hat.Transparency = -7
 				hat.Parent = gameCamera
-				hat.CFrame = entitylib.isAlive and entitylib.character.Head.CFrame + Vector3.new(0, 1, 0) or CFrame.identity
+				hat.CFrame = entitylib.isAlive and entitylib.character.Head.CFrame + Vector3.new(0, .25, 0) or CFrame.identity
 				local weld = Instance.new('WeldConstraint')
 				weld.Part0 = hat
 				weld.Part1 = entitylib.isAlive and entitylib.character.Head or nil
@@ -7185,7 +7185,7 @@ run(function()
 						weld:Destroy() 
 					end
 					hat.Parent = gameCamera
-					hat.CFrame = char.Head.CFrame + Vector3.new(0, 1, 0)
+					hat.CFrame = char.Head.CFrame + Vector3.new(0, .25, 0)
 					hat.Velocity = Vector3.zero
 					weld = Instance.new('WeldConstraint')
 					weld.Part0 = hat

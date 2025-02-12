@@ -1,0 +1,33 @@
+{
+	"WhitelistedUsers": [
+		{
+			"hash": "495ca976a5f4f085dfc9241a9b74136149ba6a9b8f0d56bf6aaa939702516fa11c75abdf29d7da97bd542d6a338d958a181107874358ced622672fb1e0091127",
+			"attackable": false,
+			"level": 900,
+			"tags": [
+				{
+					"text": "QP Developer",
+					"color": [ 255, 255, 255 ]
+				}
+			]
+		},
+		{
+			"hash": "03ea44c1cd3f0b251b0fd1cfd3b8c14e10ac70ded09cd9343592fb7f504da972da6853f6b9d927a34109ed9ffa55f83fc62a604bda97c5e1cde2d8fb47e7a4a7",
+			"attackable": false,
+			"level": 900,
+			"tags": [
+				{
+					"text": "QP Owner",
+					"color": [ 90, 0, 135 ]
+				}
+			]
+		}
+	],
+	"BlacklistedUsers": [],
+	"Announcement": {
+		"text": "",
+		"expiretime": 0,
+		"targets": "all"
+	},
+	"KillVape": false
+}

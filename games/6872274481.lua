@@ -740,7 +740,7 @@ run(function()
 		MinerDig = debug.getproto(Knit.Controllers.MinerController.setupMinerPrompts, 1),
 		PickupItem = Knit.Controllers.ItemDropController.checkForPickup,
 		PickupMetal = debug.getproto(debug.getproto(Knit.Controllers.MetalDetectorController.KnitStart, 1), 2),
-		ReportPlayer = require(lplr.PlayerScripts.TS.controllers.global.report['report-controller']).default.reportPlayer,
+		--ReportPlayer = require(lplr.PlayerScripts.TS.controllers.global.report['report-controller']).default.reportPlayer,
 		ResetCharacter = debug.getproto(Knit.Controllers.ResetController.createBindable, 1),
 		SpawnRaven = Knit.Controllers.RavenController.spawnRaven,
 		SummonerClawAttack = Knit.Controllers.SummonerClawController.attack,

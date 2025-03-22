@@ -3047,7 +3047,6 @@ run(function()
 		Tooltip = 'Prevents slowing down when using items.'
 	})
 end)
-	
 run(function()
     local TargetPart
     local Targets
@@ -3069,12 +3068,13 @@ run(function()
 
                 bedwars.ProjectileController.calculateImportantLaunchValues = function(...)
                     local self, projmeta, worldmeta, origin, shootpos = ...
-                    
+
+                    -- More reliable target selection
                     local plr = entitylib.EntityMouse({
                         Part = TargetPart.Value,
                         Range = FOV.Value,
                         Players = Targets.Players.Enabled,
-                        NPCs = Targets.NPCs and Targets.NPCs.Enabled or false,
+                        NPCs = Targets.NPCs.Enabled,
                         Wallcheck = Targets.Walls.Enabled,
                         Origin = entitylib.isAlive and (shootpos or entitylib.character.RootPart.Position) or Vector3.zero
                     })
@@ -3088,40 +3088,40 @@ run(function()
                         return old(...)
                     end
 
-                    -- Only target specific projectiles if toggle is disabled
+                    -- Projectile type filtering
                     if not OtherProjectiles.Enabled and not projmeta.projectile:find('arrow') then
                         return old(...)
                     end
 
-                    -- Meta Information
+                    -- Get projectile metadata
                     local meta = projmeta:getProjectileMeta()
                     local lifetime = (worldmeta and meta.predictionLifetimeSec or meta.lifetimeSec or 3)
                     local gravity = (meta.gravitationalAcceleration or 196.2) * projmeta.gravityMultiplier
                     local projSpeed = meta.launchVelocity or 100
                     local offsetPos = pos + (projmeta.projectile == 'owl_projectile' and Vector3.zero or projmeta.fromPositionOffset)
 
-                    -- Player gravity adjustments
+                    -- Gravity adjustment based on balloons
                     local playerGravity = workspace.Gravity
                     local balloons = plr.Character:GetAttribute('InflatedBalloons')
-                    
                     if balloons and balloons > 0 then
                         playerGravity = workspace.Gravity * (1 - (balloons >= 4 and 1.2 or balloons >= 3 and 1 or 0.975))
                     end
-                    
+
+                    -- Special item gravity override
                     if plr.Character.PrimaryPart:FindFirstChild('rbxassetid://8200754399') then
                         playerGravity = 6
                     end
 
-                    -- Calculate CFrame look vector
+                    -- CFrame calculation with improved precision
                     local newLook = CFrame.new(offsetPos, plr[TargetPart.Value].Position) * CFrame.new(
                         bedwars.BowConstantsTable.RelX,
                         bedwars.BowConstantsTable.RelY,
                         bedwars.BowConstantsTable.RelZ
                     )
 
-                    -- More accurate trajectory prediction
-                    local calc = prediction.SolveTrajectory(
-                        newLook.p,
+                    
+			local calc = prediction.SolveTrajectory(
+                        newLook.Position,
                         projSpeed,
                         gravity,
                         plr[TargetPart.Value].Position,
@@ -3131,7 +3131,7 @@ run(function()
                         plr.Jumping and 42.6 or nil,
                         rayCheck
                     )
-
+																																										
                     if calc then
                         targetinfo.Targets[plr] = tick() + 1
 
@@ -3146,40 +3146,35 @@ run(function()
 
                     return old(...)
                 end
+
             else
                 bedwars.ProjectileController.calculateImportantLaunchValues = old
             end
         end
     })
-
-    -- Target settings
     Targets = ProjectileAimbot:CreateTargets({
         Players = true,
-        Walls = true, -- wallcheck enabled for accuracy
+        Walls = true,
         NPCs = true
     })
-
-    -- Target body part
     TargetPart = ProjectileAimbot:CreateDropdown({
         Name = 'Target Part',
         List = {'RootPart', 'Head'},
         Default = 'RootPart'
     })
-
-    -- FOV for aimbot targeting
+																																					
     FOV = ProjectileAimbot:CreateSlider({
         Name = 'FOV',
         Min = 1,
         Max = 1000,
-        Default = 100 -- reduced default for accuracy
+        Default = 100
     })
-
-    -- Toggle for other projectiles
     OtherProjectiles = ProjectileAimbot:CreateToggle({
-        Name = 'Allow Other Projectiles',
+        Name = 'Other Projectiles',
         Default = true
     })
 end)
+
 
 	
 run(function()

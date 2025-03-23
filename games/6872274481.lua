@@ -7147,9 +7147,16 @@ run(function()
 		Name = 'BedPlates',
 		Function = function(callback)
 			if callback then
-				for _, v in collectionService:GetTagged('bed') do 
-					task.spawn(Added, v) 
-				end
+				task.spawn(function()
+ 					repeat 
+ 						for _, v in collectionService:GetTagged('bed') do 
+ 							task.spawn(Added, v) 
+ 						end
+ 						task.wait(5)
+ 						table.clear(Reference)
+ 						Folder:ClearAllChildren()
+ 					until not BedPlates.Enabled
+ 				end)
 				BedPlates:Clean(vapeEvents.PlaceBlockEvent.Event:Connect(refreshNear))
 				BedPlates:Clean(vapeEvents.BreakBlockEvent.Event:Connect(refreshNear))
 				BedPlates:Clean(collectionService:GetInstanceAddedSignal('bed'):Connect(Added))

@@ -46,7 +46,7 @@ local store = {
 	attackReach = 0,
 	attackReachUpdate = tick(),
 	damageBlockFail = tick(),
-	hand = {},
+	localhand = {},
 	inventory = {
 		inventory = {
 			items = {},
@@ -166,9 +166,20 @@ local function getItem(itemName, inv)
 	return nil
 end
 
+local function getClaw()
+	for slot, item in store.inventory.inventory.items do
+		if item.itemType and string.find(string.lower(tostring(item.itemType)), "summoner_claw") then
+			return item, slot, 12
+		end
+	end
+end
+
 local function getSword()
 	local bestSword, bestSwordSlot, bestSwordDamage = nil, nil, 0
 	for slot, item in store.inventory.inventory.items do
+		if store.equippedKit == "summoner" then
+			return getClaw()
+		end
 		local swordMeta = bedwars.ItemMeta[item.itemType].sword
 		if swordMeta then
 			local swordDamage = swordMeta.damage or 0

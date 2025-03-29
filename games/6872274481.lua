@@ -725,13 +725,12 @@ run(function()
 		end
 	})
 
-
-	local remoteNames = {
+local remoteNames = {
 		--AckKnockback = debug.getproto(debug.getproto(Knit.Controllers.KnockbackController.KnitStart, 1), 1),
 		AfkStatus = debug.getproto(Knit.Controllers.AfkController.KnitStart, 1),
 		AttackEntity = Knit.Controllers.SwordController.sendServerRequest,
 		BeePickup = Knit.Controllers.BeeNetController.trigger,
-		--ConsumeBattery = debug.getproto(Knit.Controllers.BatteryController.KnitStart, 1),
+		ConsumeBattery = debug.getproto(Knit.Controllers.BatteryController.KnitStart, 1),
 		CannonAim = debug.getproto(Knit.Controllers.CannonController.startAiming, 5),
 		CannonLaunch = Knit.Controllers.CannonHandController.launchSelf,
 		ConsumeItem = debug.getproto(Knit.Controllers.ConsumeController.onEnable, 1),
@@ -739,7 +738,7 @@ run(function()
 		ConsumeTreeOrb = debug.getproto(Knit.Controllers.EldertreeController.createTreeOrbInteraction, 1),
 		DepositPinata = debug.getproto(debug.getproto(Knit.Controllers.PiggyBankController.KnitStart, 2), 5),
 		--DragonBreath = debug.getproto(Knit.Controllers.VoidDragonController.KnitStart, 4),
-		DragonEndFly = debug.getproto(Knit.Controllers.VoidDragonController.flapWings, 1),
+		--DragonEndFly = debug.getproto(Knit.Controllers.VoidDragonController.flapWings, 1),
 		DragonFly = Knit.Controllers.VoidDragonController.flapWings,
 		DropItem = Knit.Controllers.ItemDropController.dropItemInHand,
 		EquipItem = debug.getproto(require(replicatedStorage.TS.entity.entities['inventory-entity']).InventoryEntity.equipItem, 3),
@@ -756,35 +755,38 @@ run(function()
 		ReportPlayer = require(lplr.PlayerScripts.TS.controllers.global.report['report-controller']).default.reportPlayer,
 		ResetCharacter = debug.getproto(Knit.Controllers.ResetController.createBindable, 1),
 		--SpawnRaven = Knit.Controllers.RavenController.spawnRaven,
-		SummonerClawAttack = Knit.Controllers.SummonerClawController.attack, 0),
 		SummonerClawAttack = Knit.Controllers.SummonerClawController.attack,
 		--WarlockTarget = debug.getproto(Knit.Controllers.WarlockStaffController.KnitStart, 3)
-   }
+	}
+
+	local function dumpRemote(tab)
+		local ind
+		for i, v in tab do
+			if v == 'Client' then
+				ind = i
+				break
+			end
+		end
+		return ind and tab[ind + 1] or ''
+	end
+
+	for i, v in remoteNames do
+		local remote = dumpRemote(debug.getconstants(v))
+		if i == "HannahKill" then
+			remote = "HannahPromptTrigger"
+		elseif i == "ConsumeBattery" then
+			remote = "ConsumeBattery"
+		end
+		if remote == '' then
+			notif('Vape', 'Failed to grab remote ('..i..')', 10, 'alert')
+		end
+		remotes[i] = remote
+	end
+
+	OldBreak = bedwars.BlockController.isBlockBreakable
 
 	
- 	local function dumpRemote(tab)
- 		local ind
- 		for i, v in tab do
- 			if v == 'Client' then
- 				ind = i
- 				break
- 			end
- 		end
- 		return ind and tab[ind + 1] or ''
- 	end
- 
- 	for i, v in remoteNames do
- 		local remote = dumpRemote(debug.getconstants(v))
- 		if i == "HannahKill" then
- 			remote = "HannahPromptTrigger"
- 		elseif i == "ConsumeBattery" then
- 			remote = "ConsumeBattery"
- 		end
- 		if remote == '' then
- 			notif('Vape', 'Failed to grab remote ('..i..')', 10, 'alert')
- 		end
- 		remotes[i] = remote
-	end
+ 			
 		
 	OldBreak = bedwars.BlockController.isBlockBreakable
 

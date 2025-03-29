@@ -759,7 +759,7 @@ run(function()
 		SummonerClawAttack = Knit.Controllers.SummonerClawController.attack, 0),
 		SummonerClawAttack = Knit.Controllers.SummonerClawController.attack,
 		--WarlockTarget = debug.getproto(Knit.Controllers.WarlockStaffController.KnitStart, 3)
-}
+   }
 
 	
  	local function dumpRemote(tab)

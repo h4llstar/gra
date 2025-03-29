@@ -3058,6 +3058,8 @@ run(function()
 		Tooltip = 'Prevents slowing down when using items.'
 	})
 end)
+
+
 run(function()
     local TargetPart
     local Targets
@@ -3080,7 +3082,7 @@ run(function()
                 bedwars.ProjectileController.calculateImportantLaunchValues = function(...)
                     local self, projmeta, worldmeta, origin, shootpos = ...
 
-                    -- More reliable target selection
+                    -- Optimized Target Selection
                     local plr = entitylib.EntityMouse({
                         Part = TargetPart.Value,
                         Range = FOV.Value,
@@ -3090,59 +3092,57 @@ run(function()
                         Origin = entitylib.isAlive and (shootpos or entitylib.character.RootPart.Position) or Vector3.zero
                     })
 
-                    if not plr then
-                        return old(...)
-                    end
+                    if not plr then return old(...) end
 
                     local pos = shootpos or self:getLaunchPosition(origin)
-                    if not pos then
-                        return old(...)
-                    end
+                    if not pos then return old(...) end
 
-                    -- Projectile type filtering
+                    -- Optimized Projectile Type Filtering
                     if not OtherProjectiles.Enabled and not projmeta.projectile:find('arrow') then
                         return old(...)
                     end
 
-                    -- Get projectile metadata
+                    -- Optimized Projectile Metadata Retrieval
                     local meta = projmeta:getProjectileMeta()
-                    local lifetime = (worldmeta and meta.predictionLifetimeSec or meta.lifetimeSec or 3)
+                    local lifetime = meta.lifetimeSec or 3
                     local gravity = (meta.gravitationalAcceleration or 196.2) * projmeta.gravityMultiplier
                     local projSpeed = meta.launchVelocity or 100
                     local offsetPos = pos + (projmeta.projectile == 'owl_projectile' and Vector3.zero or projmeta.fromPositionOffset)
 
-                    -- Gravity adjustment based on balloons
+                    -- Optimized Gravity Adjustments
                     local playerGravity = workspace.Gravity
-                    local balloons = plr.Character:GetAttribute('InflatedBalloons')
-                    if balloons and balloons > 0 then
-                        playerGravity = workspace.Gravity * (1 - (balloons >= 4 and 1.2 or balloons >= 3 and 1 or 0.975))
+                    local balloons = plr.Character:GetAttribute('InflatedBalloons') or 0
+
+                    if balloons > 0 then
+                        playerGravity = workspace.Gravity * (1 - math.min(balloons * 0.3, 1.2))
                     end
 
-                    -- Special item gravity override
                     if plr.Character.PrimaryPart:FindFirstChild('rbxassetid://8200754399') then
                         playerGravity = 6
                     end
 
-                    -- CFrame calculation with improved precision
-                    local newLook = CFrame.new(offsetPos, plr[TargetPart.Value].Position) * CFrame.new(
+                    -- More Accurate CFrame Calculation
+                    local lookAt = CFrame.new(offsetPos, plr[TargetPart.Value].Position)
+                    local newLook = lookAt * CFrame.new(
                         bedwars.BowConstantsTable.RelX,
                         bedwars.BowConstantsTable.RelY,
                         bedwars.BowConstantsTable.RelZ
                     )
 
-                    
-			local calc = prediction.SolveTrajectory(
+                    -- Optimized Trajectory Prediction
+                    local targetVelocity = projmeta.projectile == 'telepearl' and Vector3.zero or plr[TargetPart.Value].Velocity
+                    local calc = prediction.SolveTrajectory(
                         newLook.Position,
                         projSpeed,
                         gravity,
                         plr[TargetPart.Value].Position,
-                        projmeta.projectile == 'telepearl' and Vector3.zero or plr[TargetPart.Value].Velocity,
+                        targetVelocity,
                         playerGravity,
                         plr.HipHeight,
                         plr.Jumping and 42.6 or nil,
                         rayCheck
                     )
-																																										
+
                     if calc then
                         targetinfo.Targets[plr] = tick() + 1
 
@@ -3163,28 +3163,33 @@ run(function()
             end
         end
     })
+
+    -- UI Settings
     Targets = ProjectileAimbot:CreateTargets({
         Players = true,
         Walls = true,
         NPCs = true
     })
+
     TargetPart = ProjectileAimbot:CreateDropdown({
         Name = 'Target Part',
         List = {'RootPart', 'Head'},
         Default = 'RootPart'
     })
-																																					
+
     FOV = ProjectileAimbot:CreateSlider({
         Name = 'FOV',
         Min = 1,
         Max = 1000,
         Default = 100
     })
+
     OtherProjectiles = ProjectileAimbot:CreateToggle({
         Name = 'Other Projectiles',
         Default = true
     })
 end)
+
 
 
 	

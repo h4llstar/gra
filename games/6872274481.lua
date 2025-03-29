@@ -754,7 +754,7 @@ run(function()
 		ReportPlayer = require(lplr.PlayerScripts.TS.controllers.global.report['report-controller']).default.reportPlayer,
 		ResetCharacter = debug.getproto(Knit.Controllers.ResetController.createBindable, 1),
 		--SpawnRaven = Knit.Controllers.RavenController.spawnRaven,
-		SummonerClawAttackRequest = Knit.Controllers.SummonerClawController.attack,
+		SummonerClawAttack = Knit.Controllers.SummonerClawController.attackrequest,
 		--WarlockTarget = debug.getproto(Knit.Controllers.WarlockStaffController.KnitStart, 3)
 	}
 

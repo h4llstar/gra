@@ -725,76 +725,44 @@ run(function()
 		end
 	})
 
-	local remz = {
-		ProjectileRemote = "ProjectileFire",
-		EquipItemRemote = "SetInvItem",
-		DamageBlockRemote = "DamageBlock",
-		ReportRemote = "ReportPlayer",
-		PickupRemote = "PickupItemDrop",
-		CannonAimRemote = "AimCannon",
-		CannonLaunchRemote = "LaunchSelfFromCannon",
-		AttackRemote = "SwordHit",
-		GuitarHealRemote = "PlayGuitar",
-		EatRemote = "ConsumeItem",
-		SpawnRavenRemote = "SpawnRaven",
-		MageRemote = "LearnElementTome",
-		DragonRemote = "RequestDragonPunch",
-		ConsumeSoulRemote = "ConsumeGrimReaperSoul",
-		TreeRemote = "ConsumeTreeOrb",
-		PickupMetalRemote = "CollectCollectableEntity",
-		BatteryRemote = "ConsumeBattery",
-		DragonBreath = "DragonBreath",
-		AckKnockback = "AckKnockback",
-		MinerDig = "DestroyPetrifiedPlayer",
-		ReportPlayer = "ReportPlayer",
-		ResetCharacter = "ResetCharacter",
-		HarvestCrop = "CropHarvest",
-		PickUpBee = "PickUpBee",
-		AfkStatus = "AfkInfo",
-		WarlockTarget = "WarlockLinkTarget",
-		SpawnRaven = "SpawnRaven",
-		HannahKill = "HannahPromptTrigger",
-		SummonerClawAttack = "SummonerClawAttackRequest"
-	}
-
-	local extraRemotes = {
-		AckKnockback = bedwars2.Client:Get(remz.AckKnockback, 0),
-		ConsumeBattery = bedwars2.Client:Get(remz.BatteryRemote, 0),
-		DragonBreath = bedwars2.Client:Get(remz.DragonBreath, 0),
-		KaliyahPunch = bedwars2.Client:Get(remz.DragonRemote, 0),
-		PickupMetal = bedwars2.Client:Get(remz.PickupMetalRemote, 0),
-		MinerDig = bedwars2.Client:Get(remz.MinerDig, 0),
-		ReportPlayer = bedwars2.Client:Get(remz.ReportPlayer, 0),
-		CannonAim = bedwars2.Client:Get(remz.CannonAimRemote, 0),
-		CannonLaunch = bedwars2.Client:Get(remz.CannonLaunchRemote, 0),
-		ConsumeItem = bedwars2.Client:Get(remz.EatRemote, 0),
-		GuitarHeal = bedwars2.Client:Get(remz.GuitarHealRemote, 0),
-		ResetCharacter = bedwars2.Client:Get(remz.ResetCharacter, 0),
-		EquipItem = bedwars2.Client:Get(remz.EquipItemRemote, 0),
-		PickupItem = bedwars2.Client:Get(remz.PickupRemote, 0),
-		HarvestCrop = bedwars2.Client:Get(remz.HarvestCrop, 0),
-		ConsumeSoul = bedwars2.Client:Get(remz.ConsumeSoulRemote, 0),
-		ConsumeTreeOrb = bedwars2.Client:Get(remz.TreeRemote, 0),
-		BeePickup = bedwars2.Client:Get(remz.PickUpBee, 0),
-		FireProjectile = bedwars2.Client:Get(remz.ProjectileRemote, 0),
-		AfkStatus = bedwars2.Client:Get(remz.AfkStatus, 0),
-		WarlockTarget = bedwars2.Client:Get(remz.WarlockTarget, 0),
-		SpawnRaven = bedwars2.Client:Get(remz.SpawnRaven, 0),
-		HannahKill = bedwars2.Client:Get(remz.HannahKill, 0),
-		SummonerClawAttack = bedwars2.Client:Get(remz.SummonerClawAttack, 0)
-	}
 
 	local remoteNames = {
+		--AckKnockback = debug.getproto(debug.getproto(Knit.Controllers.KnockbackController.KnitStart, 1), 1),
+		AfkStatus = debug.getproto(Knit.Controllers.AfkController.KnitStart, 1),
 		AttackEntity = Knit.Controllers.SwordController.sendServerRequest,
+		BeePickup = Knit.Controllers.BeeNetController.trigger,
+		--ConsumeBattery = debug.getproto(Knit.Controllers.BatteryController.KnitStart, 1),
+		CannonAim = debug.getproto(Knit.Controllers.CannonController.startAiming, 5),
+		CannonLaunch = Knit.Controllers.CannonHandController.launchSelf,
+		ConsumeItem = debug.getproto(Knit.Controllers.ConsumeController.onEnable, 1),
+		ConsumeSoul = Knit.Controllers.GrimReaperController.consumeSoul,
+		ConsumeTreeOrb = debug.getproto(Knit.Controllers.EldertreeController.createTreeOrbInteraction, 1),
 		DepositPinata = debug.getproto(debug.getproto(Knit.Controllers.PiggyBankController.KnitStart, 2), 5),
+		--DragonBreath = debug.getproto(Knit.Controllers.VoidDragonController.KnitStart, 4),
 		DragonEndFly = debug.getproto(Knit.Controllers.VoidDragonController.flapWings, 1),
 		DragonFly = Knit.Controllers.VoidDragonController.flapWings,
 		DropItem = Knit.Controllers.ItemDropController.dropItemInHand,
-		MageSelect = debug.getproto(Knit.Controllers.MageController.registerTomeInteraction, 1)
-	}
+		EquipItem = debug.getproto(require(replicatedStorage.TS.entity.entities['inventory-entity']).InventoryEntity.equipItem, 3),
+		FireProjectile = debug.getupvalue(Knit.Controllers.ProjectileController.launchProjectileWithValues, 2),
+		GroundHit = Knit.Controllers.FallDamageController.KnitStart,
+		GuitarHeal = Knit.Controllers.GuitarController.performHeal,
+		HannahKill = debug.getproto(Knit.Controllers.HannahController.KnitStart, 2),
+		HarvestCrop = debug.getproto(debug.getproto(Knit.Controllers.CropController.KnitStart, 4), 1),
+		--KaliyahPunch = debug.getproto(debug.getproto(Knit.Controllers.DragonSlayerController.KnitStart, 2), 1),
+		MageSelect = debug.getproto(Knit.Controllers.MageController.registerTomeInteraction, 1),
+		MinerDig = debug.getproto(Knit.Controllers.MinerController.setupMinerPrompts, 1),
+		PickupItem = Knit.Controllers.ItemDropController.checkForPickup,
+		--PickupMetal = debug.getproto(debug.getproto(Knit.Controllers.MetalDetectorController.KnitStart, 1), 2),
+		ReportPlayer = require(lplr.PlayerScripts.TS.controllers.global.report['report-controller']).default.reportPlayer,
+		ResetCharacter = debug.getproto(Knit.Controllers.ResetController.createBindable, 1),
+		--SpawnRaven = Knit.Controllers.RavenController.spawnRaven,
+		SummonerClawAttack = Knit.Controllers.SummonerClawController.attack, 0),
+		SummonerClawAttack = Knit.Controllers.SummonerClawController.attack,
+		--WarlockTarget = debug.getproto(Knit.Controllers.WarlockStaffController.KnitStart, 3)
+}
 
-
-	local function dumpRemote(tab)
+	
+ 	local function dumpRemote(tab)
  		local ind
  		for i, v in tab do
  			if v == 'Client' then
@@ -814,7 +782,9 @@ run(function()
  		end
  		if remote == '' then
  			notif('Vape', 'Failed to grab remote ('..i..')', 10, 'alert')
-			end
+ 		end
+ 		remotes[i] = remote
+	end
 		
 	OldBreak = bedwars.BlockController.isBlockBreakable
 

@@ -642,6 +642,165 @@ run(function()
 end)
 entitylib.start()
 
+local function getRemotes(paths)
+    local allRemotes = {}
+    local function filterDescendants(descendants, classNames)
+        local filtered = {}
+        if typeof(classNames) ~= "table" then
+            classNames = {classNames}
+        end
+        for _, descendant in pairs(descendants) do
+            for _, className in pairs(classNames) do
+                if descendant:IsA(className) then
+                    table.insert(filtered, descendant)
+                    break 
+                end
+            end
+        end
+        return filtered
+    end
+    for _, path in pairs(paths) do
+        local objectToGetDescendantsFrom = game
+        for _, subfolder in pairs(string.split(path, ".")) do
+            objectToGetDescendantsFrom = objectToGetDescendantsFrom:FindFirstChild(subfolder)
+            if not objectToGetDescendantsFrom then
+                --warn("Path " .. path .. " does not exist.")
+                break
+            end
+        end
+        if objectToGetDescendantsFrom then
+            local remotes = filterDescendants(objectToGetDescendantsFrom:GetDescendants(), {"BindableEvent", "RemoteEvent", "RemoteFunction", "UnreliableRemoteEvent"})
+            for _, remote in pairs(remotes) do
+                table.insert(allRemotes, remote)
+            end
+        end
+    end
+    return allRemotes
+end
+bedwars2.Client = {}
+local cache = {} 
+local namespaceCache = {}
+
+local function decorateRemote(remote, src)
+	local isFunction = string.find(string.lower(remote.ClassName), "function")
+	local isEvent = string.find(string.lower(remote.ClassName), "remoteevent")
+	local isBindable = string.find(string.lower(remote.ClassName), "bindable")
+
+	if isFunction then
+		function src:CallServer(...)
+			local args = {...}
+			return remote:InvokeServer(unpack(args))
+		end
+	elseif isEvent then
+		function src:CallServer(...)
+			local args = {...}
+			return remote:FireServer(unpack(args))
+		end
+	elseif isBindable then
+		function src:CallServer(...)
+			local args = {...}
+			return remote:Fire(unpack(args))
+		end
+	end
+
+	function src:InvokeServer(...)
+		local args = {...}
+		src:CallServer(unpack(args))
+	end
+
+	function src:FireServer(...)
+		local args = {...}
+		src:CallServer(unpack(args))
+	end
+
+	function src:SendToServer(...)
+		local args = {...}
+		src:CallServer(unpack(...))
+	end
+
+	function src:CallServerAsync(...)
+		local args = {...}
+		src:CallServer(unpack(args))
+	end
+
+	src.instance = remote
+
+	return src
+end
+local remotes_cache
+
+function bedwars2.Client:Get(remName, customTable, resRequired, strict)
+	if customTable ~= nil and customTable == 0 then 
+		customTable = nil
+		resRequired = nil
+		strict = true
+	end
+    if cache[remName] then
+        return cache[remName] 
+    end
+	remotes_cache = remotes_cache or getRemotes({"ReplicatedStorage"})
+    local remotes = customTable or remotes_cache
+    for _, v in pairs(remotes) do
+        if (v.Name == remName) or ((not strict) and string.find(v.Name, remName)) then  
+            local remote
+            if not resRequired then
+                remote = decorateRemote(v, {})
+            else
+                local tbl = {}
+                function tbl:InvokeServer()
+                    local tbl2 = {}
+                    local res = v:InvokeServer()
+                    function tbl2:andThen(func)
+                        func(res)
+                    end
+                    return tbl2
+                end
+				tbl = decorateRemote(v, tbl)
+                remote = tbl
+            end
+            
+            cache[remName] = remote 
+            return remote
+        end
+    end
+    warn(debug.traceback("[bedwars.Client:Get]: Failure finding remote! Remote: " .. tostring(remName) .. " CustomTable: " .. tostring(customTable or "no table specified") .. " Using backup table..."))
+    local backupTable = {}
+    function backupTable:FireServer() return false end
+    function backupTable:InvokeServer() return false end
+    cache[remName] = backupTable
+    return backupTable
+end
+
+function bedwars2.Client:GetNamespace(nameSpace, blacklist)
+    local cacheKey = nameSpace .. (blacklist and table.concat(blacklist, ",") or "")
+    if namespaceCache[cacheKey] then
+        return namespaceCache[cacheKey]
+    end
+    local remotes = getRemotes({"ReplicatedStorage"})
+    local resolvedRemotes = {}
+    blacklist = blacklist or {}
+    for _, v in pairs(remotes) do
+        if (v.Name == nameSpace or string.find(v.Name, nameSpace)) and not table.find(blacklist, v.Name) then
+            table.insert(resolvedRemotes, v)
+        end
+    end
+    local resolveFunctionTable = {Namespace = resolvedRemotes}
+    function resolveFunctionTable:Get(remName)
+        return bedwars2.Client:Get(remName, resolvedRemotes)
+    end
+    namespaceCache[cacheKey] = resolveFunctionTable 
+    return resolveFunctionTable
+end
+
+function bedwars2.Client:WaitFor(remName)
+	local tbl = {}
+	function tbl:andThen(func)
+		repeat task.wait() until bedwars2.Client:Get(remName)
+		func(bedwars2.Client:Get(remName).OnClientEvent)
+	end
+	return tbl
+end
+
 run(function()
 	local KnitInit, Knit
 	repeat
@@ -724,39 +883,74 @@ run(function()
 		end
 	})
 
+	local remz = {
+		ProjectileRemote = "ProjectileFire",
+		EquipItemRemote = "SetInvItem",
+		DamageBlockRemote = "DamageBlock",
+		ReportRemote = "ReportPlayer",
+		PickupRemote = "PickupItemDrop",
+		CannonAimRemote = "AimCannon",
+		CannonLaunchRemote = "LaunchSelfFromCannon",
+		AttackRemote = "SwordHit",
+		GuitarHealRemote = "PlayGuitar",
+		EatRemote = "ConsumeItem",
+		SpawnRavenRemote = "SpawnRaven",
+		MageRemote = "LearnElementTome",
+		DragonRemote = "RequestDragonPunch",
+		ConsumeSoulRemote = "ConsumeGrimReaperSoul",
+		TreeRemote = "ConsumeTreeOrb",
+		PickupMetalRemote = "CollectCollectableEntity",
+		BatteryRemote = "ConsumeBattery",
+		DragonBreath = "DragonBreath",
+		AckKnockback = "AckKnockback",
+		MinerDig = "DestroyPetrifiedPlayer",
+		ReportPlayer = "ReportPlayer",
+		ResetCharacter = "ResetCharacter",
+		HarvestCrop = "CropHarvest",
+		PickUpBee = "PickUpBee",
+		AfkStatus = "AfkInfo",
+		WarlockTarget = "WarlockLinkTarget",
+		SpawnRaven = "SpawnRaven",
+		HannahKill = "HannahPromptTrigger",
+		SummonerClawAttack = "SummonerClawAttackRequest"
+	}
+
+	local extraRemotes = {
+		AckKnockback = bedwars2.Client:Get(remz.AckKnockback, 0),
+		ConsumeBattery = bedwars2.Client:Get(remz.BatteryRemote, 0),
+		DragonBreath = bedwars2.Client:Get(remz.DragonBreath, 0),
+		KaliyahPunch = bedwars2.Client:Get(remz.DragonRemote, 0),
+		PickupMetal = bedwars2.Client:Get(remz.PickupMetalRemote, 0),
+		MinerDig = bedwars2.Client:Get(remz.MinerDig, 0),
+		ReportPlayer = bedwars2.Client:Get(remz.ReportPlayer, 0),
+		CannonAim = bedwars2.Client:Get(remz.CannonAimRemote, 0),
+		CannonLaunch = bedwars2.Client:Get(remz.CannonLaunchRemote, 0),
+		ConsumeItem = bedwars2.Client:Get(remz.EatRemote, 0),
+		GuitarHeal = bedwars2.Client:Get(remz.GuitarHealRemote, 0),
+		ResetCharacter = bedwars2.Client:Get(remz.ResetCharacter, 0),
+		EquipItem = bedwars2.Client:Get(remz.EquipItemRemote, 0),
+		PickupItem = bedwars2.Client:Get(remz.PickupRemote, 0),
+		HarvestCrop = bedwars2.Client:Get(remz.HarvestCrop, 0),
+		ConsumeSoul = bedwars2.Client:Get(remz.ConsumeSoulRemote, 0),
+		ConsumeTreeOrb = bedwars2.Client:Get(remz.TreeRemote, 0),
+		BeePickup = bedwars2.Client:Get(remz.PickUpBee, 0),
+		FireProjectile = bedwars2.Client:Get(remz.ProjectileRemote, 0),
+		AfkStatus = bedwars2.Client:Get(remz.AfkStatus, 0),
+		WarlockTarget = bedwars2.Client:Get(remz.WarlockTarget, 0),
+		SpawnRaven = bedwars2.Client:Get(remz.SpawnRaven, 0),
+		HannahKill = bedwars2.Client:Get(remz.HannahKill, 0),
+		SummonerClawAttack = bedwars2.Client:Get(remz.SummonerClawAttack, 0)
+	}
+
 	local remoteNames = {
-		--AckKnockback = debug.getproto(debug.getproto(Knit.Controllers.KnockbackController.KnitStart, 1), 1),
-		AfkStatus = debug.getproto(Knit.Controllers.AfkController.KnitStart, 1),
 		AttackEntity = Knit.Controllers.SwordController.sendServerRequest,
-		BeePickup = Knit.Controllers.BeeNetController.trigger,
-		--ConsumeBattery = debug.getproto(Knit.Controllers.BatteryController.KnitStart, 1),
-		CannonAim = debug.getproto(Knit.Controllers.CannonController.startAiming, 5),
-		CannonLaunch = Knit.Controllers.CannonHandController.launchSelf,
-		ConsumeItem = debug.getproto(Knit.Controllers.ConsumeController.onEnable, 1),
-		ConsumeSoul = Knit.Controllers.GrimReaperController.consumeSoul,
-		ConsumeTreeOrb = debug.getproto(Knit.Controllers.EldertreeController.createTreeOrbInteraction, 1),
 		DepositPinata = debug.getproto(debug.getproto(Knit.Controllers.PiggyBankController.KnitStart, 2), 5),
-		--DragonBreath = debug.getproto(Knit.Controllers.VoidDragonController.KnitStart, 4),
 		DragonEndFly = debug.getproto(Knit.Controllers.VoidDragonController.flapWings, 1),
 		DragonFly = Knit.Controllers.VoidDragonController.flapWings,
 		DropItem = Knit.Controllers.ItemDropController.dropItemInHand,
-		EquipItem = debug.getproto(require(replicatedStorage.TS.entity.entities['inventory-entity']).InventoryEntity.equipItem, 3),
-		FireProjectile = debug.getupvalue(Knit.Controllers.ProjectileController.launchProjectileWithValues, 2),
-		GroundHit = Knit.Controllers.FallDamageController.KnitStart,
-		GuitarHeal = Knit.Controllers.GuitarController.performHeal,
-		HannahKill = debug.getproto(Knit.Controllers.HannahController.KnitStart, 2),
-		HarvestCrop = debug.getproto(debug.getproto(Knit.Controllers.CropController.KnitStart, 4), 1),
-		--KaliyahPunch = debug.getproto(debug.getproto(Knit.Controllers.DragonSlayerController.KnitStart, 2), 1),
-		MageSelect = debug.getproto(Knit.Controllers.MageController.registerTomeInteraction, 1),
-		MinerDig = debug.getproto(Knit.Controllers.MinerController.setupMinerPrompts, 1),
-		PickupItem = Knit.Controllers.ItemDropController.checkForPickup,
-		--PickupMetal = debug.getproto(debug.getproto(Knit.Controllers.MetalDetectorController.KnitStart, 1), 2),
-		ReportPlayer = require(lplr.PlayerScripts.TS.controllers.global.report['report-controller']).default.reportPlayer,
-		ResetCharacter = debug.getproto(Knit.Controllers.ResetController.createBindable, 1),
-		--SpawnRaven = Knit.Controllers.RavenController.spawnRaven,
-		SummonerClawAttack = Knit.Controllers.SummonerClawController.attack,
-		--WarlockTarget = debug.getproto(Knit.Controllers.WarlockStaffController.KnitStart, 3)
+		MageSelect = debug.getproto(Knit.Controllers.MageController.registerTomeInteraction, 1)
 	}
+
 
 	local function dumpRemote(tab)
 		local ind
@@ -771,17 +965,18 @@ run(function()
 
 	for i, v in remoteNames do
 		local remote = dumpRemote(debug.getconstants(v))
-		if i == "HannahKill" then
-			remote = "HannahPromptTrigger"
-		elseif i == "ConsumeBattery" then
-			remote = "ConsumeBattery"
-		end
 		if remote == '' then
-			notif('Vape', 'Failed to grab remote ('..i..')', 10, 'alert')
+			if shared.VoidDev then
+				notif('Vape', 'Failed to grab remote ('..i..')', 10, 'alert')
+			end
 		end
 		remotes[i] = remote
 	end
 
+	for i,v in pairs(extraRemotes) do
+		remotes[i] = v
+		end
+		
 	OldBreak = bedwars.BlockController.isBlockBreakable
 
 	Client.Get = function(self, remoteName)

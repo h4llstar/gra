@@ -953,29 +953,26 @@ run(function()
 
 
 	local function dumpRemote(tab)
-		local ind
-		for i, v in tab do
-			if v == 'Client' then
-				ind = i
-				break
+ 		local ind
+ 		for i, v in tab do
+ 			if v == 'Client' then
+ 				ind = i
+ 				break
+ 			end
+ 		end
+ 		return ind and tab[ind + 1] or ''
+ 	end
+ 
+ 	for i, v in remoteNames do
+ 		local remote = dumpRemote(debug.getconstants(v))
+ 		if i == "HannahKill" then
+ 			remote = "HannahPromptTrigger"
+ 		elseif i == "ConsumeBattery" then
+ 			remote = "ConsumeBattery"
+ 		end
+ 		if remote == '' then
+ 			notif('Vape', 'Failed to grab remote ('..i..')', 10, 'alert')
 			end
-		end
-		return ind and tab[ind + 1] or ''
-	end
-
-	for i, v in remoteNames do
-		local remote = dumpRemote(debug.getconstants(v))
-		if remote == '' then
-			if shared.VoidDev then
-				notif('Vape', 'Failed to grab remote ('..i..')', 10, 'alert')
-			end
-		end
-		remotes[i] = remote
-	end
-
-	for i,v in pairs(extraRemotes) do
-		remotes[i] = v
-		end
 		
 	OldBreak = bedwars.BlockController.isBlockBreakable
 

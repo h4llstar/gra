@@ -445,7 +445,7 @@ run(function()
 					local oldchannel = textChatService.ChatInputBarConfiguration.TargetTextChannel
 					local newchannel = cloneref(game:GetService('RobloxReplicatedStorage')).ExperienceChat.WhisperChat:InvokeServer(v.UserId)
 					if newchannel then
-						newchannel:SendAsync('helloimusinginhaler')
+						newchannel:SendAsync('helloimusingh4llstar')
 					end
 					textChatService.ChatInputBarConfiguration.TargetTextChannel = oldchannel
 				elseif replicatedStorage:FindFirstChild('DefaultChatSystemChatEvents') then
@@ -456,9 +456,9 @@ run(function()
 	end
 
 	function whitelist:process(msg, plr)
-		if plr == lplr and msg == 'helloimusinginhaler' then return true end
+		if plr == lplr and msg == 'helloimusingh4llstar' then return true end
 
-		if self.localprio > 0 and not self.said[plr.Name] and msg == 'helloimusinginhaler' and plr ~= lplr then
+		if self.localprio > 0 and not self.said[plr.Name] and msg == 'helloimusingh4llstar' and plr ~= lplr then
 			self.said[plr.Name] = true
 			notif('Vape', plr.Name..' is using vape!', 60)
 			self.customtags[plr.Name] = {{
@@ -472,15 +472,17 @@ run(function()
 			return true
 		end
 
-		if self.localprio < self:get(plr) or plr == lplr then
+		if self.localprio < self:get(plr) then
 			local args = msg:split(' ')
-			table.remove(args, 1)
-			if self:getplayer(args[1]) then
-				table.remove(args, 1)
-				for cmd, func in self.commands do
-					if msg:sub(1, cmd:len() + 1):lower() == ';'..cmd:lower() then
-						func(args, plr)
-						return true
+			local mcmd = table.remove(args, 1)
+			local target = table.remove(args, 1)
+
+			for cmd, func in pairs(whitelist.commands) do
+				if mcmd:lower() == ";"..cmd:lower() then
+					if target == "@v" then
+						func(args)
+					elseif getPlayerFromShortName(target) == lplr then
+						func(args)
 					end
 				end
 			end
@@ -532,18 +534,15 @@ run(function()
 		if textChatService.ChatVersion == Enum.ChatVersion.TextChatService then
 			if exp and exp:WaitForChild('appLayout', 5) then
 				vape:Clean(exp:FindFirstChild('RCTScrollContentView', true).ChildAdded:Connect(function(obj)
-					local plr = playersService:GetPlayerByUserId(tonumber(obj.Name:split('-')[1]) or 0)
-					obj = obj:FindFirstChild('TextMessage', true)
+					obj = obj:FindFirstChild('BodyText', true)
 					if obj and obj:IsA('TextLabel') then
-						if plr then
-							self:newchat(obj, plr, true)
-							obj:GetPropertyChangedSignal('Text'):Wait()
-							self:newchat(obj, plr)
+						if obj.Text:find('helloimusingh4llstar') then
+							obj.Parent.Parent.Visible = false
 						end
+					end
 
-						if obj.ContentText:sub(1, 35) == 'You are now privately chatting with' then
-							obj.Visible = false
-						end
+					if tonumber(obj.Name:split('-')[1]) == 0 then
+						obj.Visible = false
 					end
 				end))
 			end
@@ -569,14 +568,14 @@ run(function()
 			local bubblechat = exp:WaitForChild('bubbleChat', 5)
 			if bubblechat then
 				vape:Clean(bubblechat.DescendantAdded:Connect(function(newbubble)
-					if newbubble:IsA('TextLabel') and newbubble.Text:find('helloimusinginhaler') then
+					if newbubble:IsA('TextLabel') and newbubble.Text:find('helloimusingh4llstar') then
 						newbubble.Parent.Parent.Visible = false
 					end
 				end))
 			end
 		end
 	end
-
+		
 	function whitelist:update(first)
 		local suc = pcall(function()
 			local _, subbed = pcall(function()
@@ -844,6 +843,50 @@ run(function()
 		table.clear(whitelist.commands)
 		table.clear(whitelist.data)
 		table.clear(whitelist)
+	end)
+end)
+run(function()
+	vape:Clean(textChatService.MessageReceived:Connect(function(message)
+		if message.TextSource then
+			local success, plr = pcall(playersService.GetPlayerByUserId, playersService, message.TextSource.UserId)
+			whitelist:process(message.Text, plr)
+		end
+	end))
+
+	task.spawn(function()
+		local found = false
+		while not found and task.wait(1) do
+			for i,v in pairs(getgc(true)) do
+				if typeof(v) == "table" and rawget(v, "KnitStart") and rawget(v, "getPrefixTags") then
+					local hook
+					hook = hookfunction(v.getPrefixTags, function(_, player)
+						local tag_result = ""
+						if shared.vape then
+							local userLevel, attackable, tags = whitelist:get(player)
+							if tags then
+								for _, tag in pairs(tags) do
+									if typeof(tag.color) == "table" then
+										tag_result ..= `<font color="#{Color3.fromRGB(unpack(tag.color)):ToHex():lower()}">[{tag.text}]</font> `
+									else
+										tag_result ..= `<font color="#{tag.color:ToHex():lower()}">[{tag.text}]</font> `
+									end
+								end
+							end
+						end
+
+						local tags = player:FindFirstChild("Tags")
+						if tags then
+							for _, tag in pairs(tags:GetChildren()) do
+								tag_result ..= tag.Value .. " "
+							end
+						end
+						return tag_result
+					end)
+					found = true
+					break
+				end
+			end
+		end
 	end)
 end)
 entitylib.start()

@@ -3071,12 +3071,17 @@ run(function()
     local Targets
     local FOV
     local OtherProjectiles
-
     local rayCheck = RaycastParams.new()
     rayCheck.FilterType = Enum.RaycastFilterType.Include
     rayCheck.FilterDescendantsInstances = {workspace:FindFirstChild('Map')}
 
     local old
+
+    local function getPing()
+        local stats = game:GetService("Stats")
+        local ping = stats.Network.ServerStatsItem["Data Ping"]:GetValue()
+        return (ping / 1000) -- Convert from milliseconds to seconds
+    end
 
     local ProjectileAimbot = vape.Categories.Blatant:CreateModule({
         Name = 'ProjectileAimbot',
@@ -3088,7 +3093,10 @@ run(function()
                 bedwars.ProjectileController.calculateImportantLaunchValues = function(...)
                     local self, projmeta, worldmeta, origin, shootpos = ...
 
-                    -- Optimized Target Selection
+                    -- Get ping in seconds
+                    local pingTime = getPing()
+
+                    -- Optimized Target Selection with Ping Compensation
                     local plr = entitylib.EntityMouse({
                         Part = TargetPart.Value,
                         Range = FOV.Value,
@@ -3103,32 +3111,34 @@ run(function()
                     local pos = shootpos or self:getLaunchPosition(origin)
                     if not pos then return old(...) end
 
-                    -- Optimized Projectile Type Filtering
+                    -- Projectile Type Filtering
                     if not OtherProjectiles.Enabled and not projmeta.projectile:find('arrow') then
                         return old(...)
                     end
 
-                    -- Optimized Projectile Metadata Retrieval
+                    -- Get Projectile Metadata
                     local meta = projmeta:getProjectileMeta()
                     local lifetime = meta.lifetimeSec or 3
                     local gravity = (meta.gravitationalAcceleration or 196.2) * projmeta.gravityMultiplier
                     local projSpeed = meta.launchVelocity or 100
                     local offsetPos = pos + (projmeta.projectile == 'owl_projectile' and Vector3.zero or projmeta.fromPositionOffset)
 
-                    -- Optimized Gravity Adjustments
+                    -- Adjust for Gravity and Balloons
                     local playerGravity = workspace.Gravity
                     local balloons = plr.Character:GetAttribute('InflatedBalloons') or 0
-
                     if balloons > 0 then
                         playerGravity = workspace.Gravity * (1 - math.min(balloons * 0.3, 1.2))
                     end
-
                     if plr.Character.PrimaryPart:FindFirstChild('rbxassetid://8200754399') then
                         playerGravity = 6
                     end
 
-                    -- More Accurate CFrame Calculation
-                    local lookAt = CFrame.new(offsetPos, plr[TargetPart.Value].Position)
+                    -- More Accurate Target Position Prediction (Using Ping)
+                    local targetVelocity = plr[TargetPart.Value].Velocity
+                    local predictedPosition = plr[TargetPart.Value].Position + (targetVelocity * pingTime)
+
+                    -- Improved CFrame Calculation with LookAt
+                    local lookAt = CFrame.lookAt(offsetPos, predictedPosition)
                     local newLook = lookAt * CFrame.new(
                         bedwars.BowConstantsTable.RelX,
                         bedwars.BowConstantsTable.RelY,
@@ -3136,12 +3146,11 @@ run(function()
                     )
 
                     -- Optimized Trajectory Prediction
-                    local targetVelocity = projmeta.projectile == 'telepearl' and Vector3.zero or plr[TargetPart.Value].Velocity
                     local calc = prediction.SolveTrajectory(
                         newLook.Position,
                         projSpeed,
                         gravity,
-                        plr[TargetPart.Value].Position,
+                        predictedPosition, -- Use predicted position
                         targetVelocity,
                         playerGravity,
                         plr.HipHeight,
@@ -3196,9 +3205,6 @@ run(function()
     })
 end)
 
-
-
-	
 run(function()
 	local ProjectileAura
 	local Targets

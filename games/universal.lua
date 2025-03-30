@@ -639,17 +639,21 @@ run(function()
 				end)
 			end
 
-			if whitelist.data.Announcement.expiretime > os.time() then
-				local targets = whitelist.data.Announcement.targets
-				targets = targets == 'all' and {tostring(lplr.UserId)} or targets:split(',')
+			if whitelist.data and whitelist.data.Announcement then
+    local expiretime = tonumber(whitelist.data.Announcement.expiretime)
+    
+    if expiretime and expiretime > os.time() then
+        local targets = whitelist.data.Announcement.targets
+        targets = targets == 'all' and {tostring(lplr.UserId)} or (type(targets) == "string" and targets:split(',') or targets)
 
-				if table.find(targets, tostring(lplr.UserId)) then
-					local hint = Instance.new('Hint')
-					hint.Text = 'VAPE ANNOUNCEMENT: '..whitelist.data.Announcement.text
-					hint.Parent = workspace
-					game:GetService('Debris'):AddItem(hint, 20)
-				end
-			end
+        if type(targets) == "table" and table.find(targets, tostring(lplr.UserId)) then
+            local hint = Instance.new('Hint')
+            hint.Text = 'VAPE ANNOUNCEMENT: ' .. tostring(whitelist.data.Announcement.text or "No message")
+            hint.Parent = workspace
+            game:GetService('Debris'):AddItem(hint, 20)
+        end
+    end
+end
 
 			if whitelist.data.KillVape then
 				vape:Uninject()

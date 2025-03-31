@@ -3077,10 +3077,18 @@ run(function()
 
     local old
 
+    -- Fixed Ping Function
     local function getPing()
         local stats = game:GetService("Stats")
-        local ping = stats.Network.ServerStatsItem["Data Ping"]:GetValue()
-        return (ping / 1000) -- Convert from milliseconds to seconds
+        local networkStats = stats and stats.Network
+        if networkStats then
+            for _, stat in pairs(networkStats:GetChildren()) do
+                if stat.Name:lower():find("ping") then
+                    return stat:GetValue() / 1000 -- Convert from milliseconds to seconds
+                end
+            end
+        end
+        return 0 -- Default to zero if unavailable
     end
 
     local ProjectileAimbot = vape.Categories.Blatant:CreateModule({
@@ -3204,6 +3212,7 @@ run(function()
         Default = true
     })
 end)
+
 
 run(function()
 	local ProjectileAura

@@ -3074,14 +3074,17 @@ run(function()
 	local rayCheck = RaycastParams.new()
 	rayCheck.FilterType = Enum.RaycastFilterType.Include
 	rayCheck.FilterDescendantsInstances = {workspace:FindFirstChild('Map')}
-	local old
-	
-	-- ✅ Fix for Ping Retrieval
-	local function getPing()
-		local stats = game:GetService("Stats")
-		local pingStat = stats:FindFirstChild("PerformanceStats") and stats.PerformanceStats:FindFirstChild("Ping")
-		return pingStat and pingStat:GetValue() / 1000 or 0.05  -- Default fallback ping = 50ms
-	end
+local function getPing()
+    local stats = game:GetService("Stats")
+    local network = stats:FindFirstChild("Network")
+    if network then
+        local pingStat = network:FindFirstChild("Ping")
+        if pingStat and pingStat:IsA("NumberValue") then
+            return pingStat.Value / 1000  -- Convert ms to seconds
+        end
+    end
+    return 0.05  -- Default 50ms fallback
+end
 
 	local ProjectileAimbot = vape.Categories.Blatant:CreateModule({
 		Name = 'ProjectileAimbot',

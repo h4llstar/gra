@@ -4701,52 +4701,78 @@ run(function()
 end)
 	
 run(function()
-	local shooting, old = false
-	
-	local function getCrossbows()
-		local crossbows = {}
-		for i, v in store.inventory.hotbar do
-			if v.item and v.item.itemType:find('crossbow') and i ~= (store.inventory.hotbarSlot + 1) then table.insert(crossbows, i - 1) end
-		end
-		return crossbows
-	end
-	
-	vape.Categories.Utility:CreateModule({
-		Name = 'AutoShoot',
-		Function = function(callback)
-			if callback then
-				old = bedwars.ProjectileController.createLocalProjectile
-				bedwars.ProjectileController.createLocalProjectile = function(...)
-					local source, data, proj = ...
-					if source and (proj == 'arrow' or proj == 'fireball') and not shooting then
-						task.spawn(function()
-							local bows = getCrossbows()
-							if #bows > 0 then
-								shooting = true
-								task.wait(0.15)
-								local selected = store.inventory.hotbarSlot
-								for _, v in getCrossbows() do
-									if hotbarSwitch(v) then
-										task.wait(0.05)
-										mouse1click()
-										task.wait(0.05)
-									end
-								end
-								hotbarSwitch(selected)
-								shooting = false
-							end
-						end)
-					end
-					return old(...)
-				end
-			else
-				bedwars.ProjectileController.createLocalProjectile = old
-			end
-		end,
-		Tooltip = 'Automatically crossbow macro\'s'
-	})
-	
+    local shooting = false
+    local oldProjectile
+    local UserInputService = game:GetService("UserInputService")
+
+    local function getCrossbows()
+        local crossbows = {}
+        for i, v in pairs(store.inventory.hotbar) do
+            if v.item and v.item.itemType:find('crossbow') and i ~= (store.inventory.hotbarSlot + 1) then
+                table.insert(crossbows, i - 1)
+            end
+        end
+        return crossbows
+    end
+
+    local function getPing()
+        local stats = game:GetService("Stats")
+        local ping = stats.Network.ServerStatsItem["Data Ping"]:GetValue()
+        return ping / 1000  -- Convert from ms to seconds
+    end
+
+    local function triggerShoot()
+        if UserInputService.TouchEnabled then
+            -- Mobile: Simulates tap-to-fire
+            local touchConnection
+            touchConnection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+                if input.UserInputType == Enum.UserInputType.Touch and not gameProcessed then
+                    mouse1click() -- Fire when tapping
+                end
+            end)
+        else
+            -- PC: Uses mouse click
+            mouse1click()
+        end
+    end
+
+    vape.Categories.Utility:CreateModule({
+        Name = 'AutoShoot',
+        Function = function(callback)
+            if callback then
+                oldProjectile = bedwars.ProjectileController.createLocalProjectile
+                bedwars.ProjectileController.createLocalProjectile = function(...)
+                    local source, data, proj = ...
+                    if source and (proj == 'arrow' or proj == 'fireball') and not shooting then
+                        task.spawn(function()
+                            local bows = getCrossbows()
+                            if #bows > 0 then
+                                shooting = true
+                                local pingDelay = getPing() * 2  -- Compensate for lag
+
+                                local selected = store.inventory.hotbarSlot
+                                for _, v in pairs(getCrossbows()) do
+                                    if hotbarSwitch(v) then
+                                        task.wait(0.05 + pingDelay)
+                                        triggerShoot() -- Works for mobile & PC
+                                        task.wait(0.05 + pingDelay)
+                                    end
+                                end
+                                hotbarSwitch(selected)
+                                shooting = false
+                            end
+                        end)
+                    end
+                    return oldProjectile(...)
+                end
+            else
+                bedwars.ProjectileController.createLocalProjectile = oldProjectile
+            end
+        end,
+        Tooltip = "AutoShoot"
+    })
 end)
+
 	
 run(function()
 	local AutoToxic

@@ -3167,8 +3167,9 @@ run(function()
 			end)
 		else
 			table.insert(CoreConnections, mouse.Button1Down:Connect(selectTarget))
-		end
-		
+	       end	
+	end	
+																																end	
 	local ProjectileAimbot = vape.Categories.Blatant:CreateModule({
 		Name = 'ProjectileAimbot',
 		Function = function(callback)

@@ -1315,7 +1315,7 @@ KillauraTarget = AimAssist:CreateToggle({
 StrafeIncrease = AimAssist:CreateToggle({
 	Name = 'Strafe increase'
 })
-	
+end)	
 run(function()
 	local AutoClicker
 	local CPS

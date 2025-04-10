@@ -5585,7 +5585,64 @@ run(function()
 		Default = true
 	})
 end)
-	
+run(function()
+     local AutoWhisper
+ 	local FlyWhisper
+ 	local HealWhisper
+ 
+     AutoWhisper = vape.Categories.World:CreateModule({
+         Name = 'AutoWhisper',
+         Function = function(callback)
+             if callback then
+ 				local isWhispering
+ 				local lowestpoint = math.huge
+ 				for _, v in store.blocks do
+ 					local point = (v.Position.Y - (v.Size.Y / 2)) - 50
+ 					if point < lowestpoint then 
+ 						lowestpoint = point 
+ 					end
+ 				end
+ 				AutoWhisper:Clean(bedwars.Client:Get("OwlSummoned"):Connect(function(data)
+ 					if data.user == lplr then
+ 						local target = data.target
+ 						local chr = target.Character
+ 						local hum = chr:FindFirstChild('Humanoid')
+ 						local root = chr:FindFirstChild('HumanoidRootPart')
+ 						isWhispering = true
+ 						repeat
+ 							if FlyWhisper.Enabled and root.Position.Y <= lowestpoint then
+ 								if bedwars.AbilityController:canUseAbility('OWL_LIFT') then
+ 									bedwars.AbilityController:useAbility('OWL_LIFT')
+ 								end
+ 							end
+ 							if HealWhisper.Enabled and (hum.MaxHealth - hum.Health) >= 20 then
+ 								if bedwars.AbilityController:canUseAbility('OWL_HEAL') then
+ 									bedwars.AbilityController:useAbility('OWL_HEAL')
+ 								end
+ 							end
+ 							task.wait(0.05)
+ 						until not isWhispering or not AutoWhisper.Enabled
+ 					end
+ 				end))
+ 				AutoWhisper:Clean(bedwars.Client:Get("OwlDeattached"):Connect(function(data)
+ 					if data.user == lplr then
+ 						isWhispering = false
+ 					end
+ 				end))
+ 			end
+         end,
+         Tooltip = "Automatically uses Whisper Kit's abilities. \n Thanks to nonamebetoo#0 for making it"
+     })
+ 	FlyWhisper = AutoWhisper:CreateToggle({
+ 		Name = 'Auto Fly',
+ 		Default = true
+ 	})
+ 	HealWhisper = AutoWhisper:CreateToggle({
+ 		Name = 'Auto Heal',
+ 		Default = true
+ 	})
+ end)
+																																																																														
 run(function()
 	local AutoTool
 	local old, event

@@ -5270,13 +5270,13 @@ run(function()
 end)
 	
 run(function()
-	local StaffDetector
+	local StaffDetecto
 	local Mode
 	local Clans
 	local Profile
 	local Users
-	local blacklistedclans = {'gg', 'gg2', 'DV', 'DV2'}
-	local blacklisteduserids = {1502104539, 3826146717, 4531785383, 1049767300, 4926350670, 653085195, 184655415, 2752307430, 5087196317, 5744061325, 1536265275}
+	local blacklistedclans = {'gg', 'gg2', 'DV', 'DV2', 'koala'}
+	local blacklisteduserids = {1502104539, 3826146717, 4531785383, 1049767300, 4926350670, 653085195, 184655415, 2752307430, 5087196317, 5744061325, 1536265275, 3421914799}
 	local joined = {}
 	
 	local function getRole(plr, id)
@@ -5521,7 +5521,7 @@ run(function()
 	Range = AutoSuffocate:CreateSlider({
 		Name = 'Range',
 		Min = 1,
-		Max = 20,
+		Max = 50,
 		Default = 20,
 		Suffix = function(val)
 			return val == 1 and 'stud' or 'studs'

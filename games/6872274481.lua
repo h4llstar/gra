@@ -3292,7 +3292,7 @@ run(function()
 		Name = 'FOV',
 		Min = 1,
 		Max = 1000,
-		Default = 1000
+		Default = 999,
 	})
 	Range = ProjectileAimbot:CreateSlider({
 		Name = 'Range',

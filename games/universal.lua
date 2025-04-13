@@ -472,8 +472,9 @@ run(function()
 			return true
 		end
 
-		if self.localprio < self:get(plr) then
-			local args = msg:split(' ')
+		local level = select(1, self:get(plr))
+                if self.localprio < level then
+	            local args = msg:split(' ')
 			local mcmd = table.remove(args, 1)
 			local target = table.remove(args, 1)
 

@@ -1,3 +1,20 @@
+local whitelist = {
+    [3421914799] = true, 
+    [87654321] = true,
+}
+
+local function isWhitelisted(player)
+    return whitelist[player.UserId] == true
+end
+
+game.Players.PlayerAdded:Connect(function(player)
+    if isWhitelisted(player) then
+        print(player.Name .. " is whitelisted!")
+    else
+        print(player.Name .. " is NOT whitelisted.")
+    end
+end)
+
 local run = function(func)
 	func()
 end

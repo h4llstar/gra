@@ -5045,6 +5045,19 @@ run(function()
 	})
 end)
 
+
+local Knit = debug.getupvalue(require(game:GetService("Players").LocalPlayer.PlayerScripts.TS.knit).setup, 1)
+local BlockBreakerController = Knit.Controllers.BlockBreakerController
+
+bedwars.breakBlock = function(position, playSound, faceDirection, remote, particles)
+    return BlockBreakerController:breakBlock(position, playSound, faceDirection, remote, particles)
+end
+
+function getBestBreakSide(position)
+    return Enum.NormalId.Front 
+end
+
+																																																																											
 run(function()
 	local CannonHandController = bedwars.CannonHandController
 	local CannonController = bedwars.CannonController

@@ -1194,6 +1194,10 @@ for _, v in {'AntiRagdoll', 'TriggerBot', 'SilentAim', 'AutoRejoin', 'Rejoin', '
 end
 
 run(function()
+	local function isFirstPerson()
+		if not (lplr.Character and lplr.Character:FindFirstChild("Head")) then return nil end
+		return (lplr.Character.Head.Position - gameCamera.CFrame.Position).Magnitude < 2
+	end
 	local AimAssist
 	local Targets
 	local Sort
@@ -1203,119 +1207,110 @@ run(function()
 	local StrafeIncrease
 	local KillauraTarget
 	local ClickAim
-	local MaxTargets
-	local AimPart
-		
+	local ShopCheck
+	local FirstPersonCheck
+	
 	AimAssist = vape.Categories.Combat:CreateModule({
-	Name = 'AimAssist',
-	Function = function(callback)
-		if callback then
-			AimAssist:Clean(runService.Heartbeat:Connect(function(dt)
-				if entitylib.isAlive and store.hand.toolType == 'sword' and ((not ClickAim.Enabled) or (tick() - bedwars.SwordController.lastSwing) < 0.4) then
-					local targets = KillauraTarget.Enabled and {store.KillauraTarget} or entitylib.AllPosition({
-						Range = Distance.Value,
-						Part = AimPartDropdown.Value,
-						Wallcheck = Targets.Walls.Enabled,
-						Players = Targets.Players.Enabled,
-						NPCs = Targets.NPCs.Enabled,
-						Sort = sortmethods[Sort.Value],
-						Limit = MaxTargets.Value
-					})
-
-					for _, ent in ipairs(targets) do
-						if ent and ent.RootPart then
+		Name = 'AimAssist',
+		Function = function(callback)
+			if callback then
+				AimAssist:Clean(runService.Heartbeat:Connect(function(dt)
+					if entitylib.isAlive and store.hand.toolType == 'sword' and ((not ClickAim.Enabled) or (tick() - bedwars.SwordController.lastSwing) < 0.4) then
+						local ent = KillauraTarget.Enabled and store.KillauraTarget or entitylib.EntityPosition({
+							Range = Distance.Value,
+							Part = 'RootPart',
+							Wallcheck = Targets.Walls.Enabled,
+							Players = Targets.Players.Enabled,
+							NPCs = Targets.NPCs.Enabled,
+							Sort = sortmethods[Sort.Value]
+						})
+	
+						if ent then
+							if FirstPersonCheck.Enabled then
+								if not isFirstPerson() then return end
+							end
+							if ShopCheck.Enabled then
+								local isShop = lplr:FindFirstChild("PlayerGui") and lplr:FindFirstChild("PlayerGui"):FindFirstChild("ItemShop") or nil
+								if isShop then return end
+							end
+							pcall(function()
+								local plr = ent
+								vapeTargetInfo.Targets.AimAssist = {
+									Humanoid = {
+										Health = (plr.Character:GetAttribute("Health") or plr.Humanoid.Health) + getShieldAttribute(plr.Character),
+										MaxHealth = plr.Character:GetAttribute("MaxHealth") or plr.Humanoid.MaxHealth
+									},
+									Player = plr.Player
+								}
+							end)
 							local delta = (ent.RootPart.Position - entitylib.character.RootPart.Position)
 							local localfacing = entitylib.character.RootPart.CFrame.LookVector * Vector3.new(1, 0, 1)
 							local angle = math.acos(localfacing:Dot((delta * Vector3.new(1, 0, 1)).Unit))
-							if angle <= (math.rad(AngleSlider.Value) / 2) then
-								targetinfo.Targets[ent] = tick() + 1
-														
-								local baseSpeed = AimSpeed.Value
-                                                                local randomness = math.random(85, 115) / 100
-                                                                local legitSpeed = (baseSpeed * randomness) * dt
-
-                                                                gameCamera.CFrame = gameCamera.CFrame:Lerp(
- 	                                                            CFrame.lookAt(gameCamera.CFrame.p, ent[AimPartDropdown.Value].Position),
-                                                                    legitSpeed
-                                                                )
-								break
-							end
+							if angle >= (math.rad(AngleSlider.Value) / 2) then return end
+							targetinfo.Targets[ent] = tick() + 1
+							gameCamera.CFrame = gameCamera.CFrame:Lerp(CFrame.lookAt(gameCamera.CFrame.p, ent.RootPart.Position), (AimSpeed.Value + (StrafeIncrease.Enabled and (inputService:IsKeyDown(Enum.KeyCode.A) or inputService:IsKeyDown(Enum.KeyCode.D)) and 10 or 0)) * dt)
 						end
 					end
-				end
-			end))
+				end))
+			end
+		end,
+		Tooltip = 'Smoothly aims to closest valid target with sword'
+	})
+	Targets = AimAssist:CreateTargets({
+		Players = true, 
+		Walls = true
+	})
+	local methods = {'Damage', 'Distance'}
+	for i in sortmethods do
+		if not table.find(methods, i) then
+			table.insert(methods, i)
 		end
-	end,
-	Tooltip = 'Smoothly aims to closest valid target with sword'
-})
-
-Targets = AimAssist:CreateTargets({
-	Players = true,
-	Walls = true
-})
-
-local methods = {'Damage', 'Distance'}
-for i in sortmethods do
-	if not table.find(methods, i) then
-		table.insert(methods, i)
 	end
-end
-
-Sort = AimAssist:CreateDropdown({
-	Name = 'Target Mode',
-	List = methods
-})
-
-AimSpeed = AimAssist:CreateSlider({
-	Name = 'Aim Speed',
-	Min = 1,
-	Max = 20,
-	Default = 6
-})
-
-Distance = AimAssist:CreateSlider({
-	Name = 'Distance',
-	Min = 1,
-	Max = 30,
-	Default = 30,
-	Suffx = function(val)
-		return val == 1 and 'stud' or 'studs'
-	end
-})
-
-AngleSlider = AimAssist:CreateSlider({
-	Name = 'Max angle',
-	Min = 1,
-	Max = 360,
-	Default = 70
-})
-
-MaxTargets = AimAssist:CreateSlider({
-	Name = 'Max Targets',
-	Min = 1,
-	Max = 10,
-	Default = 1
-})
-
-AimPartDropdown = AimAssist:CreateDropdown({
-	Name = "Aim Part",
-	List = { "Head", "RootPart", "UpperTorso", "LowerTorso", "LeftLeg", "RightLeg", "LeftArm", "RightArm" },
-	Default = "RootPart"
-})
-
-ClickAim = AimAssist:CreateToggle({
-	Name = 'Click Aim',
-	Default = true
-})
-
-KillauraTarget = AimAssist:CreateToggle({
-	Name = 'Use killaura target'
-})
-
-StrafeIncrease = AimAssist:CreateToggle({
-	Name = 'Strafe increase'
-})
-end)	
+	Sort = AimAssist:CreateDropdown({
+		Name = 'Target Mode',
+		List = methods
+	})
+	AimSpeed = AimAssist:CreateSlider({
+		Name = 'Aim Speed',
+		Min = 1,
+		Max = 20,
+		Default = 6
+	})
+	Distance = AimAssist:CreateSlider({
+		Name = 'Distance',
+		Min = 1,
+		Max = 30,
+		Default = 30,
+		Suffx = function(val) 
+			return val == 1 and 'stud' or 'studs' 
+		end
+	})
+	AngleSlider = AimAssist:CreateSlider({
+		Name = 'Max angle',
+		Min = 1,
+		Max = 360,
+		Default = 70
+	})
+	ClickAim = AimAssist:CreateToggle({
+		Name = 'Click Aim',
+		Default = true
+	})
+	KillauraTarget = AimAssist:CreateToggle({
+		Name = 'Use killaura target'
+	})
+	ShopCheck = AimAssist:CreateToggle({
+		Name = "Shop Check",
+		Function = function() end,
+		Default = false
+	})
+	FirstPersonCheck = AimAssist:CreateToggle({
+		Name = "First Person Check",
+		Function = function() end,
+		Default = false
+	})
+	StrafeIncrease = AimAssist:CreateToggle({Name = 'Strafe increase'})
+end)
+			
 run(function()
 	local AutoClicker
 	local CPS

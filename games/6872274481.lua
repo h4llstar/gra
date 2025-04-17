@@ -5532,63 +5532,75 @@ run(function()
 		Default = true
 	})
 end)
+
+
 run(function()
-     local AutoWhisper
- 	local FlyWhisper
- 	local HealWhisper
- 
-     AutoWhisper = vape.Categories.World:CreateModule({
-         Name = 'AutoWhisper',
-         Function = function(callback)
-             if callback then
- 				local isWhispering
- 				local lowestpoint = math.huge
- 				for _, v in store.blocks do
- 					local point = (v.Position.Y - (v.Size.Y / 2)) - 50
- 					if point < lowestpoint then 
- 						lowestpoint = point 
- 					end
- 				end
- 				AutoWhisper:Clean(bedwars.Client:Get("OwlSummoned"):Connect(function(data)
- 					if data.user == lplr then
- 						local target = data.target
- 						local chr = target.Character
- 						local hum = chr:FindFirstChild('Humanoid')
- 						local root = chr:FindFirstChild('HumanoidRootPart')
- 						isWhispering = true
- 						repeat
- 							if FlyWhisper.Enabled and root.Position.Y <= lowestpoint then
- 								if bedwars.AbilityController:canUseAbility('OWL_LIFT') then
- 									bedwars.AbilityController:useAbility('OWL_LIFT')
- 								end
- 							end
- 							if HealWhisper.Enabled and (hum.MaxHealth - hum.Health) >= 20 then
- 								if bedwars.AbilityController:canUseAbility('OWL_HEAL') then
- 									bedwars.AbilityController:useAbility('OWL_HEAL')
- 								end
- 							end
- 							task.wait(0.05)
- 						until not isWhispering or not AutoWhisper.Enabled
- 					end
- 				end))
- 				AutoWhisper:Clean(bedwars.Client:Get("OwlDeattached"):Connect(function(data)
- 					if data.user == lplr then
- 						isWhispering = false
- 					end
- 				end))
- 			end
-         end,
-         Tooltip = "Automatically uses Whisper Kit's abilities. \n Thanks to nonamebetoo#0 for making it"
-     })
- 	FlyWhisper = AutoWhisper:CreateToggle({
- 		Name = 'Auto Fly',
- 		Default = true
- 	})
- 	HealWhisper = AutoWhisper:CreateToggle({
- 		Name = 'Auto Heal',
- 		Default = true
- 	})
- end)
+    local AutoWhisper = {Enabled = false}
+	local FlyWhisper = {Enabled = false}
+	local HealWhisper = {Enabled = false}
+	local rayCheck = RaycastParams.new()
+	rayCheck.RespectCanCollide = true
+
+	local CoreConnections = {}
+	local function clean(con)
+		table.insert(CoreConnections, con)
+	end
+
+    AutoWhisper = vape.Categories.World:CreateModule({
+        Name = 'AutoWhisper',
+        Function = function(callback)
+            if callback then
+				local isWhispering
+				clean(bedwars.Client:Get("OwlSummoned"):Connect(function(data)
+					if data.user == lplr then
+						local target = data.target
+						local chr = target.Character
+						local hum = chr:FindFirstChild('Humanoid')
+						local root = chr:FindFirstChild('HumanoidRootPart')
+						isWhispering = true
+						repeat
+							rayCheck.FilterDescendantsInstances = {lplr.Character, gameCamera, AntiVoidPart}
+							rayCheck.CollisionGroup = root.CollisionGroup
+
+							if FlyWhisper.Enabled and root.Velocity.Y <= -85 and not workspace:Raycast(root.Position, Vector3.new(0, -100, 0), rayCheck) then
+								if bedwars.AbilityController:canUseAbility('OWL_LIFT') then
+									bedwars.AbilityController:useAbility('OWL_LIFT')
+								end
+							end
+							if HealWhisper.Enabled and (hum.MaxHealth - hum.Health) >= 20 then
+								if bedwars.AbilityController:canUseAbility('OWL_HEAL') then
+									bedwars.AbilityController:useAbility('OWL_HEAL')
+								end
+							end
+							task.wait(0.05)
+						until not isWhispering or not AutoWhisper.Enabled
+					end
+				end))
+				clean(bedwars.Client:Get("OwlDeattached"):Connect(function(data)
+					if data.user == lplr then
+						isWhispering = false
+					end
+				end))
+			else
+				for i,v in pairs(CoreConnections) do
+					pcall(function() v:Disconnect() end)
+				end
+				table.clear(CoreConnections)
+			end
+        end,
+        Tooltip = "Automatically uses Whisper Kit's abilities."
+    })
+	FlyWhisper = AutoWhisper:CreateToggle({
+		Name = 'Auto Fly',
+		Default = true,
+		Function = function() end
+	})
+	HealWhisper = AutoWhisper:CreateToggle({
+		Name = 'Auto Heal',
+		Default = true,
+		Function = function() end
+	})
+end)																																																																														
 																																																																														
 run(function()
 	local AutoTool

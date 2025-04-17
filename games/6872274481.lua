@@ -5268,9 +5268,161 @@ run(function()
 		Tooltip = 'Lets you buy things like armor early.'
 	})
 end)
-	
+
 run(function()
-	local StaffDetecto
+	local CannonHandController = bedwars.CannonHandController
+	local CannonController = bedwars.CannonController
+
+	local oldLaunchSelf = CannonHandController.launchSelf
+	local oldStopAiming = CannonController.stopAiming
+	local oldStartAiming = CannonController.startAiming
+
+	local function getNearestCannon()
+		local nearest
+		local nearestDist = math.huge
+
+		for i,v in pairs(CannonController.getCannons()) do
+			pcall(function()
+				local dist = (v.Position - lplr.Character.PrimaryPart.Position).Magnitude
+				if dist < nearestDist then
+					nearestDist = dist
+					nearest = v
+				end
+			end)
+		end
+
+		return nearest
+	end
+
+	local speed_was_disabled = nil
+
+	local function disableSpeed()
+		pcall(function()
+			if vape.Modules.Speed.Enabled then
+				vape.Modules.Speed:Toggle(false)
+				speed_was_disabled = true
+			else
+				speed_was_disabled = false
+			end	
+		end)
+	end
+
+	local function enableSpeed()
+		task.wait(3)
+		if speed_was_disabled then
+			pcall(function()
+				if not vape.Modules.Speed.Enabled then
+					vape.Modules.Speed:Toggle(false)
+				end
+				speed_was_disabled = nil
+			end)
+		end
+	end
+	
+	local function breakCannon(cannon, shootfunc)
+		local pos = cannon.Position
+		local res
+		task.delay(0, function()
+			local block, blockpos = getPlacedBlock(pos)
+			if block and block.Name == 'cannon' and (entitylib.character.RootPart.Position - block.Position).Magnitude < 20 then
+				local breaktype = bedwars.ItemMeta[block.Name].block.breakType
+				local tool = store.tools[breaktype]
+				if tool then
+					switchItem(tool.tool)
+				end
+	
+				local broken = 0.1
+				if bedwars.BlockController:calculateBlockDamage(lplr, {blockPosition = blockpos}) < block:GetAttribute('Health') then
+					broken = 0.4
+					bedwars.breakBlock(block, true, true)
+				end
+	
+				task.delay(broken, function()
+					if BetterDaveyAutojump.Enabled then
+						lplr.Character.Humanoid:ChangeState(3)
+					end
+					res = shootfunc()
+					bedwars.breakBlock(block.Position, true, getBestBreakSide(block.Position), true, true)
+					return res
+				end)
+			end
+		end)
+	end
+
+	BetterDavey = vape.Categories.Utility:CreateModule({
+		Name = 'BetterDavey',
+		Function = function(callback)
+			if callback then
+				local stopIndex = 0
+
+				CannonHandController.launchSelf = function(...)
+					disableSpeed()
+
+					if BetterDaveyAutoBreak.Enabled then
+						local cannon = getNearestCannon()
+						if cannon then
+							local args = {...}
+							local result = breakCannon(cannon, function() return oldLaunchSelf(unpack(args)) end)
+							enableSpeed()
+							return result
+						end
+					else
+						if BetterDaveyAutojump.Enabled then
+							lplr.Character.Humanoid:ChangeState(3)
+						end
+						local res = oldLaunchSelf(...)
+						enableSpeed()
+						return res
+					end
+				end
+
+				CannonController.stopAiming = function(...)
+					stopIndex += 1
+
+					if BetterDaveyAutoLaunch.Enabled and stopIndex == 2 then
+						local cannon = getNearestCannon()
+
+						if cannon then
+							CannonHandController:launchSelf(cannon)
+						end
+					end
+
+					return oldStopAiming(...)
+				end
+
+				CannonController.startAiming = function(...)
+					stopIndex = 0
+					return oldStartAiming(...)
+				end
+			else
+				CannonHandController.launchSelf = oldLaunchSelf
+				CannonController.stopAiming = oldStopAiming
+				CannonController.startAiming = oldStartAiming
+			end
+		end
+	})
+	BetterDaveyAutojump = BetterDavey:CreateToggle({
+		Name = 'Auto jump',
+		Default = true,
+		HoverText = 'Automatically jumps when launching from a cannon',
+		Function = function() end
+	})
+	BetterDaveyAutoLaunch = BetterDavey:CreateToggle({
+		Name = 'Auto launch',
+		Default = true,
+		HoverText = 'Automatically launches you from a cannon when you finish aiming',
+		Function = function() end
+	})
+	BetterDaveyAutoBreak = BetterDavey:CreateToggle({
+		Name = 'Auto break',
+		Default = true,
+		HoverText = 'Automatically breaks a cannon when you launch from it',
+		Function = function() end
+	})
+end)
+																																																																										
+run(function()
+	local StaffDetector
 	local Mode
 	local Clans
 	local Profile

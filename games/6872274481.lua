@@ -917,7 +917,7 @@ local remoteNames = {
 	end
 
 	bedwars.breakBlock = function(block, effects, anim, customHealthbar)
-		if lplr:GetAttribute('DenyBlockBreak') or not entitylib.isAlive or InfiniteFly.Enabled then return end
+		if lplr:GetAttribute('DenyBlockBreak') or not entitylib.isAlive then return end
 		local handler = bedwars.BlockController:getHandlerRegistry():getHandler(block.Name)
 		local cost, pos, target, path = math.huge
 

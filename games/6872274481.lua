@@ -756,7 +756,7 @@ local remoteNames = {
 		ResetCharacter = debug.getproto(Knit.Controllers.ResetController.createBindable, 1),
 		--SpawnRaven = Knit.Controllers.RavenController.spawnRaven,
 		SummonerClawAttack = Knit.Controllers.SummonerClawController.attack,
-		WarlockTarget = debug.getproto(Knit.Controllers.WarlockStaffController.KnitStart, 3)
+		--WarlockTarget = debug.getproto(Knit.Controllers.WarlockStaffController.KnitStart, 3)
 	}
 
 	local function dumpRemote(tab)

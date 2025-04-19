@@ -8396,16 +8396,17 @@ run(function()
 	UICleanup:CreateToggle({
 		Name = 'No Hotbar Numbers',
 		Function = function(callback)
-			local func = oldinvrender or HotbarOpenInventory.render
-			modifyconstant(debug.getupvalue(HotbarApp.render, 17).render, 90, callback and 0 or nil)
-			modifyconstant(func, 71, callback and 0 or nil)
+																																																																																																																																										
+			modifyconstant(HotbarApp, 23, callback and 1 or nil)
+ 			modifyconstant(debug.getupvalue(HotbarApp, 15).render, 30, callback and 1 or nil)
+ 			modifyconstant(debug.getupvalue(HotbarApp, 23).tweenPosition, 16, callback and 0 or nil)
 		end,
 		Default = true
 	})
 	OpenInv = UICleanup:CreateToggle({
 		Name = 'No Inventory Button',
 		Function = function(callback)
-			modifyconstant(HotbarApp.render, 78, callback and 0 or nil)
+			modifyconstant(HotbarApp, 78, callback and 0 or nil)
 			if UICleanup.Enabled then
 				if callback then
 					oldinvrender = HotbarOpenInventory.render

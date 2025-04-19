@@ -710,7 +710,8 @@ run(function()
 		UILayers = require(replicatedStorage['rbxts_include']['node_modules']['@easy-games']['game-core'].out).UILayers,
 		VisualizerUtils = require(lplr.PlayerScripts.TS.lib.visualizer['visualizer-utils']).VisualizerUtils,
 		WeldTable = require(replicatedStorage.TS.util['weld-util']).WeldUtil,
-		WinEffectMeta = require(replicatedStorage.TS.locker['win-effect']['win-effect-meta']).WinEffectMeta
+		WinEffectMeta = require(replicatedStorage.TS.locker['win-effect']['win-effect-meta']).WinEffectMeta,
+ 		ZapNetworking = require(lplr.PlayerScripts.TS.lib.network)
 	}, {
 		__index = function(self, ind)
 			rawset(self, ind, Knit.Controllers[ind])

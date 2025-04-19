@@ -696,7 +696,6 @@ run(function()
 		Knit = Knit,
 		KnockbackUtil = require(replicatedStorage.TS.damage['knockback-util']).KnockbackUtil,
 		NametagController = Knit.Controllers.NametagController,
-		MatchEndScreenController = Flamework.resolveDependency('client/controllers/game/match/match-end-screen-controller@MatchEndScreenController'),
 		MageKitUtil = require(replicatedStorage.TS.games.bedwars.kit.kits.mage['mage-kit-util']).MageKitUtil,
 		ProjectileMeta = require(replicatedStorage.TS.projectile['projectile-meta']).ProjectileMeta,
 		QueryUtil = require(replicatedStorage['rbxts_include']['node_modules']['@easy-games']['game-core'].out).GameQueryUtil,

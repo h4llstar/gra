@@ -166,6 +166,10 @@ local function getItem(itemName, inv)
 	return nil
 end
 
+local function getRoactRender(func)
+ 	return debug.getupvalue(debug.getupvalue(debug.getupvalue(func, 3).render, 2).render, 1)
+end
+
 local function getClaw()
 	for slot, item in store.inventory.inventory.items do
 		if item.itemType and string.find(string.lower(tostring(item.itemType)), "summoner_claw") then
@@ -2607,7 +2611,7 @@ run(function()
 		Name = 'Synced Animation',
 		Tooltip = 'Plays animation with hit attempt'
 	})
-end)
+end)-
 
 run(function()
 	local Value

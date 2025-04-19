@@ -1039,7 +1039,21 @@ local remoteNames = {
 			end))
 		end)
 	end
+		
+       vape:Clean(bedwars.ZapNetworking.EntityDamageEventZap.On(function(...)
+ 		vapeEvents.EntityDamageEvent:Fire({
+ 			entityInstance = ...,
+ 			damage = select(2, ...),
+ 			damageType = select(3, ...),
+ 			fromPosition = select(4, ...),
+ 			fromEntity = select(5, ...),
+ 			knockbackMultiplier = select(6, ...),
+ 			knockbackId = select(7, ...),
+ 			disableDamageHighlight = select(13, ...)
+ 		})
+ 	end))
 
+		
 	for _, event in {'PlaceBlockEvent', 'BreakBlockEvent'} do
 		bedwars.ClientDamageBlock:WaitFor(event):andThen(function(connection)
 			if not vape.Connections then return end

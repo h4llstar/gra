@@ -2034,6 +2034,7 @@ run(function()
 	local Targets
 	local Sort
 	local Range
+        local ChargeTime
 	local UpdateRate
 	local AngleSlider
 	local MaxTargets
@@ -2251,7 +2252,7 @@ run(function()
 								store.attackReachUpdate = tick() + 1
 								AttackRemote:FireServer({
 									weapon = sword.tool,
-									chargedAttack = {chargeRatio = badexecutor and 0.999 or (meta.sword.chargedAttack and not meta.sword.chargedAttack.disableOnGrounded and 0.999 or 0)},
+									chargeRatio = ChargeTime.Value,
 									entityInstance = v.Character,
 									validate = {
 										raycast = {
@@ -2326,6 +2327,15 @@ run(function()
 			return val == 1 and 'stud' or 'studs' 
 		end
 	})
+
+        ChargeTime = Killaura:CreateSlider({
+ 		Name = 'Charge time',
+ 		Min = 0,
+ 		Max = 1,
+ 		Default = 0.9,
+ 		Decimal = 100
+ 	})
+																									
 	AngleSlider = Killaura:CreateSlider({
 		Name = 'Max angle',
 		Min = 1,

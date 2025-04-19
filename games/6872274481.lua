@@ -1524,7 +1524,9 @@ run(function()
 								local limit = (attackRange)
 								for _, ent in entitylib.List do 
 									doAttack = ray.Instance:IsDescendantOf(ent.Character) and (localPos - ent.RootPart.Position).Magnitude <= rayRange
-									if doAttack then 
+									if doAttack then
+																						
+ bedwars.SwordController:swingSwordAtMouse(0.25 + math.random() / 8)
 										break
 									end
 								end

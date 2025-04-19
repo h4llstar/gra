@@ -2626,7 +2626,7 @@ run(function()
 		Name = 'Synced Animation',
 		Tooltip = 'Plays animation with hit attempt'
 	})
-end)-
+end)
 
 run(function()
 	local Value

@@ -1341,7 +1341,8 @@ run(function()
 							end
 						end
 					elseif store.hand.toolType == 'sword' and bedwars.DaoController.chargingMaid == nil then
-						bedwars.SwordController:swingSwordAtMouse()
+						bedwars.SwordController:stopCharging()
+ 						bedwars.SwordController:swingSwordAtMouse(0.25 + math.random() / 8)
 					end
 				end
 	

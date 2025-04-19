@@ -1525,8 +1525,6 @@ run(function()
 								for _, ent in entitylib.List do 
 									doAttack = ray.Instance:IsDescendantOf(ent.Character) and (localPos - ent.RootPart.Position).Magnitude <= rayRange
 									if doAttack then
-																						
- bedwars.SwordController:swingSwordAtMouse(0.25 + math.random() / 8)
 										break
 									end
 								end
@@ -1534,7 +1532,9 @@ run(function()
 	
 							doAttack = doAttack or bedwars.SwordController:getTargetInRegion(attackRange or 3.8 * 3, 0)
 							if doAttack then 
-								bedwars.SwordController:swingSwordAtMouse()
+								if doAttack then 
+																					
+bedwars.SwordController:swingSwordAtMouse(0.25 + math.random() / 8)
 							end
 						end
 					end

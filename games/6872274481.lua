@@ -1531,7 +1531,6 @@ run(function()
 							end
 	
 							doAttack = doAttack or bedwars.SwordController:getTargetInRegion(attackRange or 3.8 * 3, 0)
-							if doAttack then 
 								if doAttack then 
 																					
 bedwars.SwordController:swingSwordAtMouse(0.25 + math.random() / 8)

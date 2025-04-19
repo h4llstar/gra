@@ -170,20 +170,9 @@ local function getRoactRender(func)
  	return debug.getupvalue(debug.getupvalue(debug.getupvalue(func, 3).render, 2).render, 1)
 end
 
-local function getClaw()
-	for slot, item in store.inventory.inventory.items do
-		if item.itemType and string.find(string.lower(tostring(item.itemType)), "summoner_claw") then
-			return item, slot, 12
-		end
-	end
-end
-
 local function getSword()
 	local bestSword, bestSwordSlot, bestSwordDamage = nil, nil, 0
 	for slot, item in store.inventory.inventory.items do
-		if store.equippedKit == "summoner" then
-			return getClaw()
-		end
 		local swordMeta = bedwars.ItemMeta[item.itemType].sword
 		if swordMeta then
 			local swordDamage = swordMeta.baseDamage or 0
@@ -194,6 +183,7 @@ local function getSword()
 	end
 	return bestSword, bestSwordSlot
 end
+
 
 local function getTool(breakType)
 	local bestTool, bestToolSlot, bestToolDamage = nil, nil, 0

@@ -1340,8 +1340,11 @@ run(function()
 								task.spawn(blockPlacer.placeBlock, blockPlacer, mouseinfo.placementPosition)
 							end
 						end
-					elseif store.hand.toolType == 'sword' and bedwars.DaoController.chargingMaid == nil then
-						bedwars.SwordController:stopCharging()
+					elseif store.hand.toolType == 'sword' then
+ 						if bedwars.SwordController:getChargeState() ~= 'IDLE' then
+ 							bedwars.SwordController:stopCharging(store.hand.tool.Name)
+ 							bedwars.SwordController.chargingMaid:DoCleaning()
+ 						end
  						bedwars.SwordController:swingSwordAtMouse(0.25 + math.random() / 8)
 					end
 				end
@@ -1392,8 +1395,8 @@ run(function()
 		Name = 'CPS',
 		Min = 1,
 		Max = 9,
-		DefaultMin = 7,
-		DefaultMax = 7
+		DefaultMin = 4,
+		DefaultMax = 4
 	})
 	AutoClicker:CreateToggle({
 		Name = 'Place Blocks',

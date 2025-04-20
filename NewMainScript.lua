@@ -1,22 +1,3 @@
-getfflag = getfflag or function() return "" end
-gethui = gethui or function() return game:GetService("CoreGui") end
-getasset = getasset or getsynasset or function(a) return a end
-getcustomasset = getcustomasset or getasset
-getrenv = getrenv or function() return _G end
-isfile = isfile or function() return false end
-isfolder = isfolder or function() return false end
-readfile = readfile or function() return "" end
-writefile = writefile or function() end
-makefolder = makefolder or function() end
-appendfile = appendfile or function() end
-delfile = delfile or function() end
-delfolder = delfolder or function() end
-listfiles = listfiles or function() return {} end
-loadfile = loadfile or function(file) return loadstring(readfile(file)) end
-isnetworkowner = isnetworkowner or function(part) return true end
-sethiddenproperty = sethiddenproperty or function(instance, property, value) pcall(function() instance[property] = value end) end
-
-
 local isfile = isfile or function(file)
 	local suc, res = pcall(function()
 		return readfile(file)

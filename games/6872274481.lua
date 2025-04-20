@@ -2116,7 +2116,7 @@ run(function()
 		end
 
 		if LegitAura.Enabled then
-			if (tick() - bedwars.SwordController.lastSwing) > 0.1 then return false end
+			if (os.clock() - bedwars.SwordController.lastSwing) > 0.2 then return false end
 		end
 
 		return sword, meta
@@ -2621,10 +2621,6 @@ run(function()
 	LegitAura = Killaura:CreateToggle({
 		Name = 'Swing only',
 		Tooltip = 'Only attacks while swinging manually'
-	})
-	Sync = Killaura:CreateToggle({
-		Name = 'Synced Animation',
-		Tooltip = 'Plays animation with hit attempt'
 	})
 end)
 

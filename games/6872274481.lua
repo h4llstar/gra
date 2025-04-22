@@ -1348,7 +1348,7 @@ run(function()
  							bedwars.SwordController:stopCharging(store.hand.tool.Name)
  							bedwars.SwordController.chargingMaid:DoCleaning()
  						end
- 						bedwars.SwordController:swingSwordAtMouse(0.25 + math.random() / 8)
+ 						bedwars.SwordController:swingSwordAtMouse(0.39)
 					end
 				end
 	
@@ -1398,8 +1398,8 @@ run(function()
 		Name = 'CPS',
 		Min = 1,
 		Max = 9,
-		DefaultMin = 4,
-		DefaultMax = 4
+		DefaultMin = 9,
+		DefaultMax = 9
 	})
 	AutoClicker:CreateToggle({
 		Name = 'Place Blocks',
@@ -1539,7 +1539,7 @@ run(function()
 							doAttack = doAttack or bedwars.SwordController:getTargetInRegion(attackRange or 3.8 * 3, 0)
 								if doAttack then 
 																					
-bedwars.SwordController:swingSwordAtMouse(0.25 + math.random() / 8)
+bedwars.SwordController:swingSwordAtMouse(0.39)
 							end
 						end
 					end
@@ -1554,8 +1554,8 @@ bedwars.SwordController:swingSwordAtMouse(0.25 + math.random() / 8)
 		Name = 'CPS',
 		Min = 1,
 		Max = 9,
-		DefaultMin = 7,
-		DefaultMax = 7
+		DefaultMin = 9,
+		DefaultMax = 9
 	})
 end)
 	
@@ -2233,7 +2233,7 @@ run(function()
 									if not Swing.Enabled and AnimDelay <= tick() and not LegitAura.Enabled then
 										pcall(function()
 											AnimDelay = tick() + (meta.sword.respectAttackSpeedForEffects and meta.sword.attackSpeed or 0.25)
-											bedwars.SwordController:playSwordEffect(meta, 0)
+											bedwars.SwordController:playSwordEffect(meta, false)
 											if meta.displayName:find(' Scythe') then 
 												bedwars.ScytheController:playLocalAnimation() 
 											end
@@ -2337,7 +2337,7 @@ run(function()
  		Name = 'Charge time',
  		Min = 0,
  		Max = 1,
- 		Default = 0.9,
+ 		Default = 0.65,
  		Decimal = 100
  	})
 																									
